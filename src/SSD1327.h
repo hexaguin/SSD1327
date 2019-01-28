@@ -13,7 +13,6 @@ class SSD1327 {
     void setWriteZone(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
     int coordsToAddress(uint8_t x, uint8_t y);
     void drawPixel(uint8_t x, uint8_t y, uint8_t color, bool display);
-    //void drawVLine(uint8_t x, uint8_t y, uint8_t color, uint8_t lineLength, bool display);
     void drawByteAsRow(uint8_t x, uint8_t y, uint8_t byte, uint8_t color);
     void drawChar(uint8_t x, uint8_t y, char thisChar, uint8_t color);
     void drawChar16(uint8_t x, uint8_t y, char thisChar, uint8_t color);
