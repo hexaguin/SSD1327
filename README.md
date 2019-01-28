@@ -27,3 +27,15 @@ void loop() {
   delay(100);
 }
 ```
+
+## Methods
+| Method | Description | Example |
+|--------|-------------|---------|
+| `SSD1327(int cs, int dc, int rst)` | Creates a new SSD1327 object on the provided CS, DC, and RST pins. | `SSD1327 myDisplay(5, 4, 16)` |
+| `void init()` | Initializes the display. Call this once in your `setup()`. | `myDisplay.init()` |
+| `void clearBuffer()` | Resets the entire framebuffer to black (0). | `myDisplay.clearBuffer()` |
+| `void writeFullBuffer()` | Outputs the framebuffer to the display. | `myDisplay.writeFullBuffer()` |
+| `void drawPixel(uint8_t x, uint8_t y, uint8_t color, bool display)` | Draws a pixel at `x` and `y`, with greyscale shade `color` (0-15). If `display` is true, the pixel is immediately output to the display. Otherwise, only the internal framebuffer is affected. | `myDisplay.drawPixel(32, 12, 0xF, false)` |
+| `void drawCharArray(uint8_t x, uint8_t y, char text[], uint8_t color, int size=8)` | Draws an array of chars sequentially, of shade `color` and font size `size`, with the upper left corner at `x`,`y`. Valid font sizes are 8 (8x8), 16 (8x16), and 32 (16x32). Note that this library does NOT support text wrapping, you will need to implement this yourself if you have unpredictable string lengths. | `myDisplay.drawCharArray(24, 16, {'H','e','l','l','o'}, 0xF, 32)` |
+| `void drawString(uint8_t x, uint8_t y, String textString, uint8_t color, int size=8)` | Wrapper for drawCharArray which accepts Arduino `String` objects. | `myDisplay.drawCharArray(24, 16, "Hi!", 0xF, 32)` |
+| `void fillStripes(uint8_t offset)` | Fills the framebuffer with vertical gradient stripes, offset horizontally by `offset`. I don't know why I left this in, it's just a silly test function. | `myDisplay.fillStripes(0)` |
