@@ -1,6 +1,6 @@
 # Low Level SSD1327 Library
 
-Allows for drawing pixels and text to the Waveshare SSD1327 128x128 OLED module and similar displays using a full framebuffer. Note that using a complete framebuffer uses a lot of memory (8 KiB for the buffer alone), and as such, this library is unusable on AVR-based boards like the Uno and Mega. Recommended platforms include ARM-based boards (e.g. Arduino Due) and the ESP family (ESP8266 and ESP32 boards such as NodeMCU).
+Allows for drawing pixels and text to the Waveshare SSD1327 128x128 OLED module and similar displays using a full framebuffer. It was developed using the official datasheet, so *in theory*, any SSD1327 128x128 module should work with this library. Note that using a complete framebuffer uses a lot of memory (8 KiB for the buffer alone), and as such, this library is unusable on AVR-based boards like the Uno and Mega. Recommended platforms include ARM-based boards (e.g. Arduino Due) and the ESP family (ESP8266 and ESP32 boards such as NodeMCU).
 
 8x8 font based on [dhepper's font8x8](https://github.com/dhepper/font8x8). All other font sizes are Ubuntu Mono.
 
