@@ -25,7 +25,7 @@ void SSD1327::writeCmd(uint8_t reg){//Writes a command byte to the driver
 	digitalWrite(_cs, LOW);
 	SPI.transfer(reg);
 	digitalWrite(_cs, HIGH);
-}
+};
 
 void SSD1327::writeData(uint8_t data){//Writes 1 byte to the display's memory
 	digitalWrite(_dc, HIGH);
@@ -74,17 +74,17 @@ void SSD1327::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c
 	}
 };
 
-void SSD1327::drawHLine(int x, int y, int length, uint8_t color, bool display
-	for (size_t i = x; i < x+length; i++) {
-		disp.drawPixel(i, y, color, display);
+void SSD1327::drawHLine(int x, int y, int length, uint8_t color, bool display){
+	for (uint8_t i = x; i < x+length; i++) {
+		drawPixel(i, y, color, display);
 	}
-}
+};
 
 void SSD1327::drawVLine(int x, int y, int length, uint8_t color, bool display){
-	for (size_t i = y; i < y+length; i++) {
-		disp.drawPixel(x, i, color, display);
+	for (uint8_t i = y; i < y+length; i++) {
+		drawPixel(x, i, color, display);
 	}
-}
+};
 
 void SSD1327::drawByteAsRow(uint8_t x, uint8_t y, uint8_t byte, uint8_t color){//Draws a byte as an 8 pixel row
 	for (int i = 0; i < 8; i++) {
@@ -133,14 +133,14 @@ void SSD1327::drawChar16(uint8_t x, uint8_t y, char thisChar, uint8_t color){
 		drawByteAsRow(x, y+row, font16x16[thisChar][row*2], color);
 		drawByteAsRow(x+8, y+row, font16x16[thisChar][(row*2)+1], color);
 	}
-}
+};
 
 void SSD1327::drawChar32(uint8_t x, uint8_t y, char thisChar, uint8_t color){
 	for (size_t row = 0; row < 32; row++) {
 		drawByteAsRow(x, y+row, font16x32[thisChar][row*2], color);
 		drawByteAsRow(x+8, y+row, font16x32[thisChar][(row*2)+1], color);
 	}
-}
+};
 
 void SSD1327::fillStripes(uint8_t offset){ //gradient test pattern
 	for(int i = 0; i < 8192; i++){
