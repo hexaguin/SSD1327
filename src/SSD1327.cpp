@@ -62,6 +62,29 @@ void SSD1327::drawPixel(uint8_t x, uint8_t y, uint8_t color, bool display){//pix
 	}
 };
 
+void SSD1327::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t color, bool display){//Draws a rectangle from x1,y1 to x2,y2. 
+	uint8_t xMin = _min(x1, x2); // TODO: double performance by writing whole bytes at a time
+	uint8_t xMax = _max(x1, x2);
+	uint8_t yMin = _min(y1, y2);
+	uint8_t yMax = _max(y1, y2);
+	for (uint8_t x = xMin; x <= xMax; x++) {
+		for (uint8_t y = yMin; y <= yMax; y++) {
+			drawPixel(x, y, color, display);
+		}
+	}
+};
+
+void SSD1327::drawHLine(int x, int y, int length, uint8_t color, bool display
+	for (size_t i = x; i < x+length; i++) {
+		disp.drawPixel(i, y, color, display);
+	}
+}
+
+void SSD1327::drawVLine(int x, int y, int length, uint8_t color, bool display){
+	for (size_t i = y; i < y+length; i++) {
+		disp.drawPixel(x, i, color, display);
+	}
+}
 
 void SSD1327::drawByteAsRow(uint8_t x, uint8_t y, uint8_t byte, uint8_t color){//Draws a byte as an 8 pixel row
 	for (int i = 0; i < 8; i++) {
