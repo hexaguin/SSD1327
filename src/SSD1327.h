@@ -22,6 +22,7 @@ class SSD1327 {
     void fillStripes(uint8_t offset);
     void clearBuffer();
     void writeFullBuffer();
+    void setContrast(uint8_t contrast);
     void initRegs();
     void init();
   private:
