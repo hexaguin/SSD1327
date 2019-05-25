@@ -86,6 +86,22 @@ void SSD1327::drawVLine(int x, int y, int length, uint8_t color, bool display){
 	}
 };
 
+void SSD1327::drawLine(int x0, int y0, int x1, int y1, uint8_t color, bool display){ //Bresenham's line algorithm
+	int deltaX = abs(x1-x0);
+	int deltaY = abs(y1-y0);
+	int signX = x0<x1 ? 1 : -1;
+	int signY = y0<y1 ? 1 : -1; 
+	int error = (deltaX>deltaY ? deltaX : -deltaY)/2, error2;
+	
+	while (true) {
+		drawPixel(x0, y0, color, display);
+		if (x0==x1 && y0==y1) break;
+		error2 = error;
+		if (error2 >-deltaX) { error -= deltaY; x0 += signX; }
+		if (error2 < deltaY) { error += deltaX; y0 += signY; }
+	}
+}
+
 void SSD1327::drawByteAsRow(uint8_t x, uint8_t y, uint8_t byte, uint8_t color){//Draws a byte as an 8 pixel row
 	for (int i = 0; i < 8; i++) {
 		if(bitRead(byte, i)){
