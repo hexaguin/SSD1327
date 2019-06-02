@@ -11,7 +11,8 @@ class SSD1327 {
 		void writeCmd(uint8_t reg);
 		void writeData(uint8_t data);
 		void setWriteZone(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
-		int coordsToAddress(uint8_t x, uint8_t y);
+		uint16_t coordsToAddress(uint8_t x, uint8_t y);
+		void setPixelChanged(uint8_t x, uint8_t y, bool changed);
 		void drawPixel(uint8_t x, uint8_t y, uint8_t color, bool display);
 		void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t color, bool display = false);
 		void drawHLine(int x, int y, int length, uint8_t color, bool display = false);
@@ -26,11 +27,13 @@ class SSD1327 {
 		void fillStripes(uint8_t offset);
 		void clearBuffer();
 		void writeFullBuffer();
+		void writeUpdates();
 		void setContrast(uint8_t contrast);
 		void initRegs();
 		void init();
 	private:
-		uint8_t frameBuffer[8192]; //Should mirror the display's own frameBuffer.
+		uint8_t frameBuffer[8192];   // Should mirror the display's own frameBuffer.
+		uint8_t changedPixels[1024]; // Each bit of this array represets whether a given byte of frameBuffer (e.g. a pair of pixels) is not up to date.
 		int _cs;
 		int _dc;
 		int _rst;

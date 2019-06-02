@@ -44,9 +44,14 @@ void SSD1327::setWriteZone(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) { //d
 	writeCmd(y2); //End
 };
 
-int SSD1327::coordsToAddress(uint8_t x, uint8_t y){ //Converts a pixel location to a linear memory address
+uint16_t SSD1327::coordsToAddress(uint8_t x, uint8_t y){ //Converts a pixel location to a linear memory address
 	return (x/2)+(y*64);
 };
+
+void SSD1327::setPixelChanged(uint8_t x, uint8_t y, bool changed){
+	uint16_t targetByte = coordsToAddress(x, y)/8;
+	bitWrite(changedPixels[targetByte], coordsToAddress(x, y) % 8, changed);
+}
 
 void SSD1327::drawPixel(uint8_t x, uint8_t y, uint8_t color, bool display){//pixel xy coordinates 0-127, color 0-15, and whether to immediately output it to the display or buffer it 
 	int address = coordsToAddress(x,y);
@@ -59,6 +64,9 @@ void SSD1327::drawPixel(uint8_t x, uint8_t y, uint8_t color, bool display){//pix
 	if(display){
 		setWriteZone(x/2,y,x/2,y);
 		writeData(frameBuffer[address]);
+		setPixelChanged(x, y, false); // We've now synced the display with this byte of the buffer, no need to write it again
+	} else {
+		setPixelChanged(x, y, true); // This pixel is due for an update next refresh
 	}
 };
 
@@ -160,23 +168,51 @@ void SSD1327::drawChar32(uint8_t x, uint8_t y, char thisChar, uint8_t color){
 
 void SSD1327::fillStripes(uint8_t offset){ //gradient test pattern
 	for(int i = 0; i < 8192; i++){
-	uint8_t color = (i+offset & 0xF) | ((i+offset & 0xF)<<4);
-	frameBuffer[i] = color;
+		uint8_t color = (i+offset & 0xF) | ((i+offset & 0xF)<<4);
+		frameBuffer[i] = color;
+	}
+	for (uint16_t i = 0; i < 1024; i++) {
+		changedPixels[i] = 0xFF; // Set all pixels to be updated next frame. fillStripes should not be used without a full write anyways, but just in case
 	}
 };
 
 void SSD1327::clearBuffer(){//
 	for(int i = 0; i < 8192; i++){
-	 frameBuffer[i] = 0;
+		if (frameBuffer[i]) { // If there is a non-zero (non-black) byte here, make sure it gets updated
+			frameBuffer[i] = 0;
+			bitWrite(changedPixels[i/8], i%8, 1); // Mark this pixel as needing an update
+		}
 	}
 };
 
 void SSD1327::writeFullBuffer(){ //Outputs the full framebuffer to the display
 	setWriteZone(0,0,63,127); //Full display
 	for(int i = 0; i < 8192; i++){
-	 writeData(frameBuffer[i]);
+		writeData(frameBuffer[i]);
+	}
+	for (uint16_t i = 0; i < 1024; i++) {
+		changedPixels[i] = 0; // Set all pixels as up to date.
 	}
 };
+
+void SSD1327::writeUpdates(){ // Writes only the pixels that have changed to the display
+	for (size_t y = 0; y < 128; y++) {
+		bool continued = false; // If we can continue with the write zone we're using
+		for (size_t x = 0; x < 128; x++) {
+			uint16_t address = coordsToAddress(x, y);
+			if ( bitRead(changedPixels[address/8], address % 8) ) { // If we need an update here
+				if (!continued) { // Just write the byte, no new write zone needed
+					continued = true;
+					setWriteZone(x/2, y, 63, 127); // Set the write zone for this new byte and any subsequent ones
+				}
+				writeData(frameBuffer[address]);
+				bitWrite(changedPixels[address/8], address % 8, 0);
+			} else {
+				continued = false; // The chain of pixels is broken
+			}
+		}
+	}
+}
 
 void SSD1327::setContrast(uint8_t contrast){
 	writeCmd(0x81);  //set contrast control
