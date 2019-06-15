@@ -1,7 +1,6 @@
 #ifndef SSD1327_CPP
 #define SSD1327_CPP
 
-
 #include "Arduino.h"
 #include "stdint.h"
 #include "SPI.h"
@@ -18,21 +17,22 @@ SSD1327::SSD1327(int cs, int dc, int rst){
 	_cs = cs;
 	_dc = dc;
 	_rst = rst;
-};
+}
 
+//TODO: Find a way to handle the write commands without toggling CS and DC every time
 void SSD1327::writeCmd(uint8_t reg){//Writes a command byte to the driver
 	digitalWrite(_dc, LOW);
 	digitalWrite(_cs, LOW);
 	SPI.transfer(reg);
 	digitalWrite(_cs, HIGH);
-};
+}
 
 void SSD1327::writeData(uint8_t data){//Writes 1 byte to the display's memory
 	digitalWrite(_dc, HIGH);
 	digitalWrite(_cs, LOW);
 	SPI.transfer(data);
 	digitalWrite(_cs, HIGH);
-};
+}
 
 void SSD1327::setWriteZone(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) { //defines a rectangular area of memory which the driver will itterate through. This function takes memory locations, meaning a 64x128 space
 	writeCmd(0x15); //Set Column Address
@@ -42,11 +42,11 @@ void SSD1327::setWriteZone(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) { //d
 	writeCmd(0x75); //Set Row Address
 	writeCmd(y1); //Beginning
 	writeCmd(y2); //End
-};
+}
 
 uint16_t SSD1327::coordsToAddress(uint8_t x, uint8_t y){ //Converts a pixel location to a linear memory address
 	return (x/2)+(y*64);
-};
+}
 
 void SSD1327::setPixelChanged(uint8_t x, uint8_t y, bool changed){
 	uint16_t targetByte = coordsToAddress(x, y)/8;
@@ -68,7 +68,7 @@ void SSD1327::drawPixel(uint8_t x, uint8_t y, uint8_t color, bool display){//pix
 	} else {
 		setPixelChanged(x, y, true); // This pixel is due for an update next refresh
 	}
-};
+}
 
 void SSD1327::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t color, bool display){//Draws a rectangle from x1,y1 to x2,y2. 
 	uint8_t xMin = _min(x1, x2); // TODO: double performance by writing whole bytes at a time
@@ -80,19 +80,19 @@ void SSD1327::drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t c
 			drawPixel(x, y, color, display);
 		}
 	}
-};
+}
 
 void SSD1327::drawHLine(int x, int y, int length, uint8_t color, bool display){
 	for (uint8_t i = x; i < x+length; i++) {
 		drawPixel(i, y, color, display);
 	}
-};
+}
 
 void SSD1327::drawVLine(int x, int y, int length, uint8_t color, bool display){
 	for (uint8_t i = y; i < y+length; i++) {
 		drawPixel(x, i, color, display);
 	}
-};
+}
 
 void SSD1327::drawLine(int x0, int y0, int x1, int y1, uint8_t color, bool display){ //Bresenham's line algorithm
 	int deltaX = abs(x1-x0);
@@ -116,13 +116,13 @@ void SSD1327::drawByteAsRow(uint8_t x, uint8_t y, uint8_t byte, uint8_t color){/
 			drawPixel(x+i, y, color, false);
 		}
 	}
-};
+}
 
 void SSD1327::drawChar(uint8_t x, uint8_t y, char thisChar, uint8_t color){
 	for (size_t i = 0; i < 8; i++) {
-		drawByteAsRow(x, y+i, font8x8_basic[thisChar][i], color);
+		drawByteAsRow(x, y+i, font8x8_basic[(unsigned char)thisChar][i], color);
 	}
-};
+}
 
 void SSD1327::drawCharArray(uint8_t x, uint8_t y, char text[], uint8_t color, int size){
 	const char* thisChar;
@@ -144,31 +144,31 @@ void SSD1327::drawCharArray(uint8_t x, uint8_t y, char text[], uint8_t color, in
 			xOffset += 8;
 		}
 	}
-};
+}
 
 void SSD1327::drawString(uint8_t x, uint8_t y, String textString, uint8_t color, int size){
 	char text[64];
 	textString.toCharArray(text, 64);
 	drawCharArray(x,y, text, color, size);
-};
+}
 
 void SSD1327::drawChar16(uint8_t x, uint8_t y, char thisChar, uint8_t color){
 	for (size_t row = 0; row < 16; row++) {
-		drawByteAsRow(x, y+row, font16x16[thisChar][row*2], color);
-		drawByteAsRow(x+8, y+row, font16x16[thisChar][(row*2)+1], color);
+		drawByteAsRow(x, y+row, font16x16[(unsigned char)thisChar][row*2], color);
+		drawByteAsRow(x+8, y+row, font16x16[(unsigned char)thisChar][(row*2)+1], color);
 	}
-};
+}
 
 void SSD1327::drawChar32(uint8_t x, uint8_t y, char thisChar, uint8_t color){
 	for (size_t row = 0; row < 32; row++) {
-		drawByteAsRow(x, y+row, font16x32[thisChar][row*2], color);
-		drawByteAsRow(x+8, y+row, font16x32[thisChar][(row*2)+1], color);
+		drawByteAsRow(x, y+row, font16x32[(unsigned char)thisChar][row*2], color);
+		drawByteAsRow(x+8, y+row, font16x32[(unsigned char)thisChar][(row*2)+1], color);
 	}
-};
+}
 
 void SSD1327::fillStripes(uint8_t offset){ //gradient test pattern
 	for(int i = 0; i < 8192; i++){
-		uint8_t color = (i+offset & 0xF) | ((i+offset & 0xF)<<4);
+		uint8_t color = ((i+offset) & 0xF) | (((i+offset) & 0xF)<<4);
 		frameBuffer[i] = color;
 	}
 	for (uint16_t i = 0; i < 1024; i++) {
@@ -183,7 +183,7 @@ void SSD1327::clearBuffer(){//
 			bitWrite(changedPixels[i/8], i%8, 1); // Mark this pixel as needing an update
 		}
 	}
-};
+}
 
 void SSD1327::writeFullBuffer(){ //Outputs the full framebuffer to the display
 	setWriteZone(0,0,63,127); //Full display
@@ -193,7 +193,7 @@ void SSD1327::writeFullBuffer(){ //Outputs the full framebuffer to the display
 	for (uint16_t i = 0; i < 1024; i++) {
 		changedPixels[i] = 0; // Set all pixels as up to date.
 	}
-};
+}
 
 void SSD1327::writeUpdates(){ // Writes only the pixels that have changed to the display
 	for (size_t y = 0; y < 128; y++) {
@@ -217,7 +217,7 @@ void SSD1327::writeUpdates(){ // Writes only the pixels that have changed to the
 void SSD1327::setContrast(uint8_t contrast){
 	writeCmd(0x81);  //set contrast control
 	writeCmd(contrast);  //Contrast byte
-};
+}
 
 void SSD1327::initRegs(){ //Sends all the boilerplate startup and config commands to the driver
 	writeCmd(0xae);//--turn off oled panel
@@ -272,7 +272,7 @@ void SSD1327::initRegs(){ //Sends all the boilerplate startup and config command
 
 	writeCmd(0xAF);
 	delay(300);
-};
+}
 
 void SSD1327::init(){
 	pinMode(_cs, OUTPUT);
@@ -292,5 +292,5 @@ void SSD1327::init(){
 	delay(100);
 
 	initRegs();
-};
+}
 #endif

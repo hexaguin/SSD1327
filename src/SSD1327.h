@@ -1,6 +1,7 @@
 #ifndef SSD1327_H
 #define SSD1327_H
-#include "Arduino.h"
+
+#include <Arduino.h>
 #include "stdint.h"
 #include "SPI.h"
 //#include "font8x8_basic.h"
