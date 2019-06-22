@@ -4,7 +4,16 @@
 #include <Arduino.h>
 #include "stdint.h"
 #include "SPI.h"
-//#include "font8x8_basic.h"
+
+// Scroll rate constants. See datasheet page 40.
+#define SSD1327_SCROLL_2   0b111
+#define SSD1327_SCROLL_3   0b100
+#define SSD1327_SCROLL_4   0b101
+#define SSD1327_SCROLL_5   0b110
+#define SSD1327_SCROLL_6   0b000
+#define SSD1327_SCROLL_32  0b001
+#define SSD1327_SCROLL_64  0b010
+#define SSD1327_SCROLL_256 0b011
 
 class SSD1327 {
 	public:
@@ -25,6 +34,10 @@ class SSD1327 {
 		void drawChar32(uint8_t x, uint8_t y, char thisChar, uint8_t color);
 		void drawCharArray(uint8_t x, uint8_t y, char text[], uint8_t color, int size=8);
 		void drawString(uint8_t x, uint8_t y, String textString, uint8_t color, int size=8);
+		void setupScrolling(uint8_t startRow, uint8_t endRow, uint8_t startCol, uint8_t endCol, uint8_t scrollSpeed, bool right);
+		void startScrolling();
+		void stopScrolling();
+		void scrollStep(uint8_t startRow, uint8_t endRow, uint8_t startCol, uint8_t endCol, bool right);
 		void fillStripes(uint8_t offset);
 		void clearBuffer();
 		void writeFullBuffer();

@@ -174,7 +174,49 @@ void SSD1327::fillStripes(uint8_t offset){ //gradient test pattern
 	for (uint16_t i = 0; i < 1024; i++) {
 		changedPixels[i] = 0xFF; // Set all pixels to be updated next frame. fillStripes should not be used without a full write anyways, but just in case
 	}
+}
+
+void SSD1327::setupScrolling(uint8_t startRow, uint8_t endRow, uint8_t startCol, uint8_t endCol, uint8_t scrollSpeed, bool right){
+	uint8_t swap;
+	if (startRow > endRow) { // Ensure start row is before end
+		swap = startRow;
+		startRow = endRow;
+		endRow = swap;
+	}
+	if (startCol > endCol) { // Ditto for columns
+		swap = startCol;
+		startCol = endCol;
+		endCol = swap;
+	}
+	writeCmd(0x2E);   // Deactivate scrolling before changing anything
+	if (right) {
+		writeCmd(0x26); // Scroll right
+	} else {
+		writeCmd(0x27); // Scroll left
+	}
+	writeCmd(0); // Dummy byte
+	writeCmd(startRow);
+	writeCmd(scrollSpeed);
+	writeCmd(endRow);
+	writeCmd(startCol);
+	writeCmd(endCol);
+	writeCmd(0); // Dummy byte
 };
+
+void SSD1327::startScrolling(){
+	writeCmd(0x2F);
+}
+
+void SSD1327::stopScrolling(){
+	writeCmd(0x2E);
+}
+
+void SSD1327::scrollStep(uint8_t startRow, uint8_t endRow, uint8_t startCol, uint8_t endCol, bool right){
+	setupScrolling(startRow, endRow, startCol, endCol, SSD1327_SCROLL_2, right);
+	startScrolling();
+	delay(15);
+	stopScrolling();
+}
 
 void SSD1327::clearBuffer(){//
 	for(int i = 0; i < 8192; i++){
